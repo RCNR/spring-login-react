@@ -2,6 +2,7 @@ package org.example.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.backend.filter.LoginFilter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -14,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -21,9 +23,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final AuthenticationSuccessHandler loginSuccessHandler;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
+                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler) {
         this.authenticationConfiguration = authenticationConfiguration;
+        this.loginSuccessHandler = loginSuccessHandler;
     }
 
 
@@ -66,7 +71,7 @@ public class SecurityConfig {
          * LoginFilter는 생성자로부터 AUthenticationManager(인증 진행 인터페이스)를 주입 받는다.
          * 따라서 직접 넣어야 한다.
          */
-        http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
 
         // 예외 처리
         http
