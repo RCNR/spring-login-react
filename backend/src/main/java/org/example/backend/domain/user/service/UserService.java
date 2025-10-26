@@ -28,7 +28,7 @@ public class UserService implements UserDetailsService {
 
     // 자체 로그인 회원 가입 (존재 여부) -> 프론트에서 '중복확인' 실행 시 체크
     @Transactional(readOnly = true)
-    public Boolean existsByUser(UserRequestDTO dto) {
+    public Boolean existUser(UserRequestDTO dto) {
         return userRepository.existsByUsername(dto.getUsername());
     }
 
