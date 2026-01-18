@@ -1,7 +1,9 @@
 package org.example.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.backend.domain.jwt.service.JwtService;
 import org.example.backend.filter.LoginFilter;
+import org.example.backend.handler.RefreshTokenLogoutHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,13 +27,15 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final AuthenticationSuccessHandler loginSuccessHandler;
     private final AuthenticationSuccessHandler socialSuccessHandler;
+    private final JwtService jwtService;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
                           @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
-                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler) {
+                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler, JwtService jwtService) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
         this.socialSuccessHandler = socialSuccessHandler;
+        this.jwtService = jwtService;
     }
 
 
@@ -57,6 +61,11 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         // CORS 설정
+
+        // 기본 로그아웃 필터 + 커스텀 Refresh 토큰 삭제 핸들러
+        http.logout(logout -> logout
+                .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService))
+        );
 
         // 기본 form 기반 로그인 비활성화 -> Login Filter 직접 작성 필요
         http.formLogin(AbstractHttpConfigurer::disable);
