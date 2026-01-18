@@ -2,12 +2,12 @@ package org.example.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.backend.domain.jwt.service.JwtService;
+import org.example.backend.filter.JWTFilter;
 import org.example.backend.filter.LoginFilter;
 import org.example.backend.handler.RefreshTokenLogoutHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -81,13 +82,10 @@ public class SecurityConfig {
         // 인가
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
+
+        http.addFilterBefore(new JWTFilter(), LogoutFilter.class);
+
         //  커스터 필터 (LoginFilter) 추가
-        /**
-         * 여기서 UsernamePasswordAuthenticationFilter.class 는
-         * 기준이 되는 필터이다.
-         * LoginFilter는 생성자로부터 AUthenticationManager(인증 진행 인터페이스)를 주입 받는다.
-         * 따라서 직접 넣어야 한다.
-         */
         http.addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
 
         // 예외 처리
