@@ -19,6 +19,7 @@ public class CustomControllerAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        System.out.println("오류 : " + ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("잘못된 요청입니다.");
